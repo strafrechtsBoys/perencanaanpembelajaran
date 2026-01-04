@@ -157,7 +157,7 @@
         <div class="flex-1 overflow-y-auto p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-blue-800">Editor Perencanaan</h2>
-                <button onclick="fillExample()" class="text-sm text-blue-600 hover:underline">Isi Contoh Data (Sampah)</button>
+                <button onclick="fillExample()" class="text-sm text-blue-600 hover:underline">Isi Contoh Data</button>
             </div>
 
             <form id="planForm">
@@ -174,12 +174,48 @@
                         </div>
                         <div>
                             <label class="input-label">Mata Pelajaran</label>
-                            <input type="text" id="in_mapel" class="input-field" placeholder="IPAS">
+                            <!-- Dropdown Mapel -->
+                            <select id="in_mapel_select" class="input-field" onchange="handleMapelChange()">
+                                <option value="">-- Pilih Mapel --</option>
+                                <option value="PJOK">PJOK</option>
+                                <option value="Matematika">Matematika</option>
+                                <option value="B. Indonesia">B. Indonesia</option>
+                                <option value="PLBJ">PLBJ</option>
+                                <option value="Seni dan Budaya">Seni dan Budaya</option>
+                                <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                                <option value="Pendidikan Agama Islam dan Budi Pekerti">PAI & Budi Pekerti</option>
+                                <option value="Pendidikan Agama Kristen">Pendidikan Agama Kristen</option>
+                                <option value="IPAS">IPAS</option>
+                                <option value="KKA">KKA</option>
+                                <option value="Mulok">Mulok</option>
+                                <option value="custom">-- Tambahkan Mapel Sendiri --</option>
+                            </select>
+                            <!-- Input Mapel Custom (Hidden by default) -->
+                            <input type="text" id="in_mapel_custom" class="input-field hidden" placeholder="Tulis nama mapel..." oninput="updateMapelPreview()">
                         </div>
+                        
+                        <!-- REVISI FASE & KELAS -->
                         <div>
-                            <label class="input-label">Fase / Kelas</label>
-                            <input type="text" id="in_kelas" class="input-field" placeholder="C / 5">
+                            <label class="input-label">Fase & Kelas</label>
+                            <div class="flex gap-2">
+                                <select id="in_fase" class="input-field w-1/2" onchange="updateKelasPhase()">
+                                    <option value="">Fase</option>
+                                    <option value="A">Fase A</option>
+                                    <option value="B">Fase B</option>
+                                    <option value="C">Fase C</option>
+                                </select>
+                                <select id="in_kelas" class="input-field w-1/2" onchange="updateKelasPhase()">
+                                    <option value="">Kelas</option>
+                                    <option value="1">Kelas 1</option>
+                                    <option value="2">Kelas 2</option>
+                                    <option value="3">Kelas 3</option>
+                                    <option value="4">Kelas 4</option>
+                                    <option value="5">Kelas 5</option>
+                                    <option value="6">Kelas 6</option>
+                                </select>
+                            </div>
                         </div>
+
                         <div>
                             <label class="input-label">Alokasi Waktu</label>
                             <input type="text" id="in_waktu" class="input-field" placeholder="6 JP (3 Pertemuan)">
@@ -320,6 +356,13 @@
     <!-- RIGHT PANEL: PREVIEW -->
     <div class="w-full md:w-1/2 h-full bg-gray-500 overflow-y-auto p-8 relative">
         <div class="absolute top-4 right-8 z-10 no-print flex gap-2">
+            <button onclick="saveToSpreadsheet()" class="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-600 flex items-center gap-2">
+                <!-- Save Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+                </svg>
+                Simpan Data
+            </button>
             <button onclick="downloadDoc()" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -439,17 +482,19 @@
                 <button onclick="closeModal('modal-info')" class="text-gray-500 hover:text-red-500 font-bold">&times;</button>
             </div>
             <div class="text-gray-700 text-sm space-y-3">
-                <p>Aplikasi ini dirancang untuk membantu Guru merancang dokumen <strong>Perencanaan Pembelajaran (Deep Learning)</strong> yang rapi, terstruktur, kreatif, dan inovatif.</p>
+                <p>Aplikasi ini dirancang untuk membantu Guru merancang dokumen <strong>Perencanaan Pembelajaran (Deep Learning)</strong>.</p>
                 <div class="bg-blue-50 p-3 rounded border border-blue-100">
-                    <strong>Cara Penggunaan:</strong>
+                    <strong>Cara Simpan ke Spreadsheet:</strong>
                     <ol class="list-decimal pl-5 mt-1 space-y-1">
-                        <li>Isi data identitas dan komponen pembelajaran.</li>
-                        <li>Gunakan tombol "Tambah Pertemuan" untuk mengatur alur.</li>
-                        <li>Pada bagian Asesmen, tambahkan kriteria rubrik (kolom) secara dinamis sesuai kebutuhan.</li>
-                        <li>Cek hasil pratinjau dan klik <strong>Download Word</strong>.</li>
+                        <li>Buat Spreadsheet Baru di Google Drive.</li>
+                        <li>Buka Extensions > Apps Script.</li>
+                        <li>Paste kode dari `Code.gs` yang disediakan.</li>
+                        <li>Klik "Deploy" > "New Deployment" > Select type: "Web app".</li>
+                        <li>Set "Who has access" ke "Anyone".</li>
+                        <li>Salin URL Web App yang dihasilkan.</li>
+                        <li>Klik tombol "Simpan Data" di aplikasi ini dan paste URL-nya.</li>
                     </ol>
                 </div>
-                <p><strong>Harapan Pengembang:</strong><br>Semoga alat ini dapat meringankan beban administrasi sehingga Guru dapat lebih fokus pada kualitas interaksi dengan murid di kelas.</p>
             </div>
             <div class="mt-6 text-right">
                 <button onclick="closeModal('modal-info')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Mengerti</button>
@@ -476,7 +521,40 @@
         const BENTUK_OPTIONS = ["Observasi", "Kinerja", "Projek", "Tes Tertulis", "Tes Lisan", "Penugasan", "Portofolio", "CATs", "Exit Ticket"];
         const INSTRUMEN_OPTIONS = ["Rubrik", "Ceklis", "Catatan Anekdotal", "Grafik Perkembangan (Kontinum)"];
 
-        // DPL Logic
+        // --- MAPEL & KELAS LOGIC ---
+        function handleMapelChange() {
+            const select = document.getElementById('in_mapel_select');
+            const customInput = document.getElementById('in_mapel_custom');
+            const outEl = document.getElementById('out_mapel');
+            
+            if (select.value === 'custom') {
+                customInput.classList.remove('hidden');
+                outEl.innerText = customInput.value || '-';
+            } else {
+                customInput.classList.add('hidden');
+                outEl.innerText = select.value || '-';
+            }
+        }
+
+        function updateMapelPreview() {
+            const customInput = document.getElementById('in_mapel_custom');
+            document.getElementById('out_mapel').innerText = customInput.value || '-';
+        }
+
+        function updateKelasPhase() {
+            const fase = document.getElementById('in_fase').value;
+            const kelas = document.getElementById('in_kelas').value;
+            const out = document.getElementById('out_kelas');
+            
+            let text = '-';
+            if(fase && kelas) text = `Fase ${fase} / Kelas ${kelas}`;
+            else if(fase) text = `Fase ${fase}`;
+            else if(kelas) text = `Kelas ${kelas}`;
+            
+            out.innerText = text;
+        }
+
+        // --- DPL Logic ---
         function updateDPLPreview() {
             const checkboxes = document.querySelectorAll('input[name="dpl"]:checked');
             const outputEl = document.getElementById('out_dimensi');
@@ -493,10 +571,9 @@
 
         // Static Fields Sync
         const staticFields = [
-            'in_judul', 'in_sekolah', 'in_mapel', 'in_kelas', 'in_waktu', 
+            'in_judul', 'in_sekolah', 'in_waktu', 
             'in_tujuan', 'in_praktik', 'in_lingkungan', 'in_mitra', 'in_digital', 
             'in_as_waktu', 'in_as_kompetensi', 'in_as_bentuk', 'in_as_instrumen', 
-            // Updated Sumatif RTL fields
             'in_rtls_belum', 'in_rtls_sudah',
             'in_kepsek_nama', 'in_kepsek_nip', 'in_guru_nama', 'in_guru_nip'
         ];
@@ -513,7 +590,6 @@
                     }
                     if(id === 'in_as_kompetensi') renderSummativePreview();
                 });
-                if(el.value && outEl) outEl.innerText = el.value;
             }
         });
 
@@ -831,9 +907,57 @@
             document.body.removeChild(downloadLink);
         }
 
+        // --- SAVE TO SPREADSHEET FUNCTION ---
+        function saveToSpreadsheet() {
+            const url = prompt("Masukkan URL Web App Google Apps Script:");
+            if(!url) return;
+
+            // Gather Data
+            const mapelSelect = document.getElementById('in_mapel_select').value;
+            const mapel = mapelSelect === 'custom' ? document.getElementById('in_mapel_custom').value : mapelSelect;
+            
+            const fase = document.getElementById('in_fase').value;
+            const kelas = document.getElementById('in_kelas').value;
+            const combinedKelas = `Fase ${fase} / Kelas ${kelas}`;
+
+            const checkboxes = document.querySelectorAll('input[name="dpl"]:checked');
+            const dpl = Array.from(checkboxes).map(cb => cb.value).join(", ");
+
+            const payload = {
+                timestamp: new Date().toISOString(),
+                judul: document.getElementById('in_judul').value,
+                sekolah: document.getElementById('in_sekolah').value,
+                mapel: mapel,
+                kelas: combinedKelas,
+                waktu: document.getElementById('in_waktu').value,
+                dimensi: dpl,
+                tujuan: document.getElementById('in_tujuan').value,
+                praktik: document.getElementById('in_praktik').value,
+                lingkungan: document.getElementById('in_lingkungan').value,
+                guru: document.getElementById('in_guru_nama').value
+            };
+
+            fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert("Data berhasil disimpan ke Spreadsheet!");
+                } else {
+                    alert("Gagal menyimpan: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Terjadi kesalahan saat menghubungi server. Pastikan URL benar dan CORS diizinkan.");
+            });
+        }
+
         function fillExample() {
             const staticData = {
-                'in_judul': 'CERDIK MENGELOLA SAMPAH PLASTIK', 'in_sekolah': 'SD Negeri Merdeka 01', 'in_mapel': 'IPAS', 'in_kelas': 'Fase C / Kelas 5', 'in_waktu': '6 JP (3 Pertemuan)', 'in_tujuan': 'Peserta didik mampu menganalisis permasalahan sampah dan menciptakan produk daur ulang.', 
+                'in_judul': 'CERDIK MENGELOLA SAMPAH PLASTIK', 'in_sekolah': 'SD Negeri Merdeka 01', 'in_waktu': '6 JP (3 Pertemuan)', 'in_tujuan': 'Peserta didik mampu menganalisis permasalahan sampah dan menciptakan produk daur ulang.', 
                 'in_praktik': 'Model Pembelajaran: Project Based Learning (PjBL)\nStrategi: Diferensiasi Produk berdasarkan minat siswa.', 
                 'in_lingkungan': 'Kelas U-Shape, Pojok Eksplorasi Sampah.', 'in_mitra': 'Bank Sampah "Berkah Bumi"', 'in_digital': 'YouTube (Video), Canva (Poster)', 
                 'in_as_waktu': 'Akhir Pertemuan 3', 'in_as_kompetensi': 'Kualitas dan kebermanfaatan produk daur ulang', 
@@ -844,6 +968,16 @@
                 const el = document.getElementById(key);
                 if(el) { el.value = value; el.dispatchEvent(new Event('input')); }
             }
+            
+            // Set Dropdowns
+            document.getElementById('in_mapel_select').value = "IPAS";
+            handleMapelChange();
+            
+            // Set Fase & Kelas
+            document.getElementById('in_fase').value = "C";
+            document.getElementById('in_kelas').value = "5";
+            updateKelasPhase();
+
             document.querySelectorAll('input[name="dpl"]').forEach(cb => cb.checked = false);
             ['Keimanan & Ketakwaan', 'Kreativitas'].forEach(val => { const cb = document.querySelector(`input[name="dpl"][value="${val}"]`); if(cb) cb.checked = true; });
             updateDPLPreview();
