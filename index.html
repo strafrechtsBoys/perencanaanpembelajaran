@@ -503,6 +503,10 @@
     </div>
 
     <script>
+        // --- KONFIGURASI GOOGLE SHEETS ---
+        // Masukkan URL Web App hasil deploy dari Apps Script di sini agar tidak perlu input manual terus
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVTzByGq6RTsGO7jSszYBcvfdgye1q4SayiAenHISF4hpEvrOUjNCJa-LODREaod598Q/exec"; 
+
         // Modal Logic
         function openModal(id) { document.getElementById(id).classList.add('modal-show'); }
         function closeModal(id) { document.getElementById(id).classList.remove('modal-show'); }
@@ -909,7 +913,10 @@
 
         // --- SAVE TO SPREADSHEET FUNCTION ---
         function saveToSpreadsheet() {
-            const url = prompt("Masukkan URL Web App Google Apps Script:");
+            let url = GOOGLE_SCRIPT_URL;
+            if (!url || url.trim() === "") {
+                url = prompt("Masukkan URL Web App Google Apps Script:");
+            }
             if(!url) return;
 
             // Gather Data
