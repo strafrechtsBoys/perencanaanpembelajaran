@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perencana Pembelajaran Deep Learning SD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* CSS untuk Print & Export */
+        @media print {
+            .no-print { display: none !important; }
+            .print-area { display: block !important; width: 100%; overflow: visible; }
+            body { background: white; margin: 0; padding: 0; }
+            .page-break { page-break-before: always; }
+            tr { page-break-inside: avoid; }
+            .meeting-box { break-inside: avoid; } /* Usahakan kotak tidak terpotong */
+        }
+        
+        /* Tampilan Layar (A4 Simulation) */
+        .a4-paper {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            font-family: 'Times New Roman', Times, serif;
+            color: black;
+            line-height: 1.5;
+        }
+
+        /* Kotak Pertemuan */
+        .meeting-box {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        /* Form Styling */
+        .input-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #2563eb;
+            ring: 2px solid #2563eb;
+        }
+
+        /* Document Typography */
+        h1, h2, h3, h4 { font-weight: bold; }
+        .doc-title { text-align: center; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; font-size: 14pt; }
+        .doc-section { margin-top: 15px; margin-bottom: 5px; font-weight: bold; font-size: 12pt; }
+        .doc-content { margin-left: 0; text-align: justify; }
+        .rubric-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; font-size: 11pt; }
+        .rubric-table th, .rubric-table td { border: 1px solid black; padding: 5px; vertical-align: top; }
+        
+        .hint-text { font-size: 0.75rem; color: #6b7280; font-style: italic; margin-bottom: 0.5rem; }
+        
+        .assessment-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .btn-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Checkbox Grid */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        .checkbox-item input {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-show { display: flex; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- LEFT PANEL: INPUT FORM (Sekarang Flex Col agar footer bisa di bawah) -->
+    <div class="w-full md:w-1/2 h-full flex flex-col bg-white border-r border-gray-200 no-print">
+        
+        <!-- Scrollable Form Area -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-blue-800">Editor Perencanaan</h2>
+                <button onclick="fillExample()" class="text-sm text-blue-600 hover:underline">Isi Contoh Data (Sampah)</button>
+            </div>
+
+            <form id="planForm">
+                <!-- Identitas -->
+                <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+                    <h3 class="font-bold text-blue-800 mb-3">Identitas Modul</h3>
+                    <label class="input-label">Judul Pembelajaran / Topik</label>
+                    <input type="text" id="in_judul" class="input-field" placeholder="Contoh: Pengolahan Sampah Plastik">
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="input-label">Satuan Pendidikan</label>
+                            <input type="text" id="in_sekolah" class="input-field" placeholder="SD Negeri...">
+                        </div>
+                        <div>
+                            <label class="input-label">Mata Pelajaran</label>
+                            <input type="text" id="in_mapel" class="input-field" placeholder="IPAS">
+                        </div>
+                        <div>
+                            <label class="input-label">Fase / Kelas</label>
+                            <input type="text" id="in_kelas" class="input-field" placeholder="C / 5">
+                        </div>
+                        <div>
+                            <label class="input-label">Alokasi Waktu</label>
+                            <input type="text" id="in_waktu" class="input-field" placeholder="6 JP (3 Pertemuan)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Komponen Utama -->
+                <div class="mb-6">
+                    <label class="input-label">A. Dimensi Profil Lulusan</label>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200 mb-4">
+                        <div class="checkbox-grid" id="dpl-checkbox-container">
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Keimanan & Ketakwaan"> Keimanan & Ketakwaan</label>
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Kewargaan"> Kewargaan</label>
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Penalaran Kritis"> Penalaran Kritis</label>
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Kreativitas"> Kreativitas</label>
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Kolaborasi"> Kolaborasi</label>
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Kemandirian"> Kemandirian</label>
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Kesehatan"> Kesehatan</label>
+                            <label class="checkbox-item"><input type="checkbox" name="dpl" value="Komunikasi"> Komunikasi</label>
+                        </div>
+                        <p class="hint-text mb-0">*Pilih dimensi yang relevan dengan pembelajaran ini.</p>
+                    </div>
+
+                    <label class="input-label">B. Tujuan Pembelajaran Utama</label>
+                    <textarea id="in_tujuan" class="input-field h-20" placeholder="Tujuan besar yang ingin dicapai di akhir rangkaian..."></textarea>
+
+                    <label class="input-label">C. Praktik Pedagogis</label>
+                    <textarea id="in_praktik" class="input-field h-24" placeholder="Jelaskan pendekatan, model, atau strategi yang digunakan secara bebas..."></textarea>
+
+                    <label class="input-label">D. Lingkungan Pembelajaran</label>
+                    <p class="hint-text">Jelaskan suasana kelas yang mendukung partisipasi aktif & rasa ingin tahu.</p>
+                    <textarea id="in_lingkungan" class="input-field h-24" placeholder="Lingkungan kelas diatur berkelompok..."></textarea>
+                    
+                    <label class="input-label">E. Kemitraan</label>
+                    <input type="text" id="in_mitra" class="input-field" placeholder="Orang tua, Pakar lingkungan, dll (Jika ada)">
+
+                    <label class="input-label">F. Pemanfaatan Digital</label>
+                    <textarea id="in_digital" class="input-field h-20" placeholder="Youtube, Canva, Google Form, dll..."></textarea>
+                </div>
+
+                <!-- Langkah Pembelajaran (Deep Learning Cycle) - DYNAMIC -->
+                <div class="bg-green-50 p-4 rounded-lg mb-6 border border-green-100">
+                    <h3 class="font-bold text-green-800 mb-3">G. Langkah Pembelajaran</h3>
+                    
+                    <div id="meetings-input-container">
+                        <!-- Dynamic meeting inputs will be generated here -->
+                    </div>
+
+                    <button type="button" onclick="addMeeting()" class="w-full bg-green-100 text-green-800 py-2 rounded border border-green-300 hover:bg-green-200 mb-2 font-semibold flex justify-center items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Tambah Pertemuan
+                    </button>
+                </div>
+
+                <!-- Asesmen Section -->
+                <div class="bg-yellow-50 p-4 rounded-lg mb-6 border border-yellow-100">
+                    <h3 class="font-bold text-yellow-800 mb-3">H. Asesmen</h3>
+                    
+                    <div id="formative-container"></div>
+
+                    <button type="button" onclick="addAssessment()" class="w-full bg-yellow-100 text-yellow-800 py-2 rounded border border-yellow-300 hover:bg-yellow-200 mb-6 font-semibold flex justify-center items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Tambah Asesmen Formatif
+                    </button>
+
+                    <hr class="border-yellow-300 my-6">
+
+                    <h4 class="font-semibold text-sm mb-2 text-yellow-900">2. Asesmen Sumatif (Akhir)</h4>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                             <label class="input-label">Waktu Pelaksanaan</label>
+                             <input type="text" id="in_as_waktu" class="input-field" placeholder="Pertemuan 3">
+                        </div>
+                        <div>
+                             <label class="input-label">Bentuk Asesmen</label>
+                             <select id="in_as_bentuk" class="input-field" onchange="renderSummativeUI(); renderSummativePreview();">
+                             </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="input-label">Instrumen Asesmen Sumatif</label>
+                        <select id="in_as_instrumen" class="input-field" onchange="renderSummativeUI(); renderSummativePreview();">
+                        </select>
+                    </div>
+
+                    <label class="input-label" id="lbl_as_kompetensi">Kompetensi yang Dinilai</label>
+                    <textarea id="in_as_kompetensi" class="input-field h-24" placeholder="Indikator capaian..."></textarea>
+                    
+                    <div id="summative-dynamic-fields"></div>
+
+                     <label class="input-label">Rencana Tindak Lanjut (Sumatif)</label>
+                    <div class="grid grid-cols-1 gap-2">
+                        <input type="text" id="in_rtls_mb" class="input-field" placeholder="RTL Sumatif MB / Bimbingan">
+                        <input type="text" id="in_rtls_b" class="input-field" placeholder="RTL Sumatif B / Penguatan">
+                        <input type="text" id="in_rtls_bsh" class="input-field" placeholder="RTL Sumatif BSH / Pengayaan">
+                    </div>
+                </div>
+
+                <!-- Identitas Penanda Tangan -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-3">Identitas Penanda Tangan</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="input-label">Nama Kepala Sekolah</label>
+                            <input type="text" id="in_kepsek_nama" class="input-field" placeholder="Nama Kepala Sekolah">
+                            <label class="input-label">NIP Kepala Sekolah</label>
+                            <input type="text" id="in_kepsek_nip" class="input-field" placeholder="NIP Kepala Sekolah">
+                        </div>
+                        <div>
+                            <label class="input-label">Nama Guru Kelas</label>
+                            <input type="text" id="in_guru_nama" class="input-field" placeholder="Nama Guru">
+                            <label class="input-label">NIP Guru Kelas</label>
+                            <input type="text" id="in_guru_nip" class="input-field" placeholder="NIP Guru">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- FOOTER: Info Pengembang (Fixed Bottom Left) -->
+        <div class="p-4 bg-gray-50 border-t border-gray-200 text-center">
+            <p class="text-xs text-gray-500 mb-2">Developed by <strong>Oryza Sativa N</strong></p>
+            <div class="flex justify-center gap-2">
+                <button onclick="openModal('modal-bio')" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded text-xs font-semibold">Biodata Pengembang</button>
+                <button onclick="openModal('modal-info')" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded text-xs font-semibold">Info Aplikasi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: PREVIEW -->
+    <div class="w-full md:w-1/2 h-full bg-gray-500 overflow-y-auto p-8 relative">
+        <div class="absolute top-4 right-8 z-10 no-print flex gap-2">
+            <button onclick="downloadDoc()" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Word
+            </button>
+            <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2-4h6a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m4 9V3" />
+                </svg>
+                Cetak PDF
+            </button>
+        </div>
+
+        <div id="document-preview" class="a4-paper print-area">
+            <div class="doc-title">
+                PERENCANAAN PEMBELAJARAN MENDALAM (DEEP LEARNING)<br>
+                <span id="out_judul">[JUDUL PEMBELAJARAN]</span>
+            </div>
+
+            <table style="width: 100%; margin-bottom: 20px;">
+                <tr><td width="150">Satuan Pendidikan</td><td>: <span id="out_sekolah">-</span></td></tr>
+                <tr><td>Mata Pelajaran</td><td>: <span id="out_mapel">-</span></td></tr>
+                <tr><td>Fase/Kelas</td><td>: <span id="out_kelas">-</span></td></tr>
+                <tr><td>Alokasi Waktu</td><td>: <span id="out_waktu">-</span></td></tr>
+            </table>
+
+            <div class="doc-section">A. Dimensi Profil Lulusan</div>
+            <div class="doc-content" id="out_dimensi">-</div>
+
+            <div class="doc-section">B. Tujuan Pembelajaran</div>
+            <div class="doc-content" id="out_tujuan">-</div>
+
+            <div class="doc-section">C. Praktik Pedagogis</div>
+            <div class="doc-content" id="out_praktik">-</div>
+
+            <div class="doc-section">D. Lingkungan Pembelajaran</div>
+            <div class="doc-content" id="out_lingkungan">-</div>
+
+            <div class="doc-section">E. Kemitraan</div>
+            <div class="doc-content" id="out_mitra">-</div>
+
+            <div class="doc-section">F. Pemanfaatan Digital</div>
+            <div class="doc-content" id="out_digital">-</div>
+
+            <div class="doc-section">G. Langkah Pembelajaran</div>
+            
+            <div id="out_meetings_container">
+                <!-- Dynamic meetings content generated here -->
+            </div>
+            
+            <!-- Force Page Break for Word/Print before Assessment -->
+            <br style="page-break-before: always; mso-break-type: section-break;" />
+
+            <div class="doc-section">H. Asesmen</div>
+
+            <strong class="block mb-2">1. Asesmen Formatif</strong>
+            <div id="out_formative_container"></div>
+
+            <div style="margin-top: 20px; page-break-inside: avoid;">
+                <strong class="block mb-2">2. Asesmen Sumatif Keseluruhan Kegiatan</strong>
+                <ul style="list-style: none; padding-left: 0; margin-top: 5px;">
+                    <li>- Waktu Pelaksanaan : <span id="out_as_waktu">-</span></li>
+                    <li>- Bentuk : <span id="out_as_bentuk">-</span> (<span id="out_as_instrumen">Rubrik</span>)</li>
+                </ul>
+
+                <div id="out_summative_content"></div>
+
+                <strong>Rencana Tindak Lanjut Asesmen Sumatif:</strong>
+                <ul style="list-style: none; padding-left: 0; margin-top: 5px;">
+                    <li>- Mulai Berkembang/Bimbingan: <span id="out_rtls_mb">-</span></li>
+                    <li>- Berkembang/Penguatan: <span id="out_rtls_b">-</span></li>
+                    <li>- BSH/Pengayaan: <span id="out_rtls_bsh">-</span></li>
+                </ul>
+            </div>
+
+            <!-- Footer Tanda Tangan -->
+            <div style="margin-top: 50px; display: flex; justify-content: space-between; page-break-inside: avoid;">
+                <div style="text-align: center; min-width: 200px;">
+                    Mengetahui,<br>Kepala Sekolah<br><br><br><br>
+                    <strong style="text-decoration: underline;"><span id="out_kepsek_nama">(....................................)</span></strong><br>
+                    NIP. <span id="out_kepsek_nip">..........................</span>
+                </div>
+                <div style="text-align: center; min-width: 200px;">
+                    Guru Kelas<br><br><br><br><br>
+                    <strong style="text-decoration: underline;"><span id="out_guru_nama">(....................................)</span></strong><br>
+                    NIP. <span id="out_guru_nip">..........................</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Modal Biodata -->
+    <div id="modal-bio" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Biodata Pengembang</h3>
+                <button onclick="closeModal('modal-bio')" class="text-gray-500 hover:text-red-500 font-bold">&times;</button>
+            </div>
+            
+            <!-- Added Image Section -->
+            <div class="flex justify-center mb-4">
+                <img src="imagedev.png" alt="Foto Pengembang" class="w-32 h-32 rounded-full object-cover border-4 border-indigo-50 shadow-sm" onerror="this.onerror=null; this.src='https://via.placeholder.com/128?text=DEV';">
+            </div>
+
+            <div class="text-gray-700">
+                <p><strong>Nama:</strong> Oryza Sativa N</p>
+                <p><strong>Peran:</strong> PE Teacher/Praktisi Pendidikan</p>
+                <hr class="my-3">
+                <p class="text-sm italic">"Pendidikan bukan sekadar mengisi wadah, tetapi menyalakan api rasa ingin tahu."</p>
+            </div>
+            <div class="mt-6 text-right">
+                <button onclick="closeModal('modal-bio')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Info -->
+    <div id="modal-info" class="modal-overlay">
+        <div class="modal-content">
+             <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-blue-800">Info Aplikasi</h3>
+                <button onclick="closeModal('modal-info')" class="text-gray-500 hover:text-red-500 font-bold">&times;</button>
+            </div>
+            <div class="text-gray-700 text-sm space-y-3">
+                <p>Aplikasi ini dirancang untuk membantu Guru merancang dokumen <strong>Perencanaan Pembelajaran (Deep Learning)</strong> yang rapi, terstruktur, kreatif, dan inovatif.</p>
+                
+                <div class="bg-blue-50 p-3 rounded border border-blue-100">
+                    <strong>Cara Penggunaan:</strong>
+                    <ol class="list-decimal pl-5 mt-1 space-y-1">
+                        <li>Isi data identitas dan komponen pembelajaran di panel kiri.</li>
+                        <li>Tambahkan pertemuan di bagian Langkah Pembelajaran sesuai kebutuhan.</li>
+                        <li>Tambahkan asesmen formatif.</li>
+                        <li>Cek hasil pratinjau dokumen di panel kanan secara <em>real-time</em>.</li>
+                        <li>Klik <strong>Download Word</strong> atau <strong>Cetak PDF</strong>.</li>
+                    </ol>
+                </div>
+                
+                <p><strong>Harapan Pengembang:</strong><br>
+                Semoga alat ini dapat meringankan beban administrasi sehingga Guru dapat lebih fokus pada kualitas interaksi dengan murid di kelas.</p>
+            </div>
+            <div class="mt-6 text-right">
+                <button onclick="closeModal('modal-info')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Mengerti</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Logic
+        function openModal(id) {
+            document.getElementById(id).classList.add('modal-show');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('modal-show');
+        }
+
+        // State
+        let meetings = []; // Array to store meeting objects
+        let formativeAssessments = [];
+        let summativeDynamicData = { rubrik_mb: '', rubrik_b: '', rubrik_bsh: '' };
+
+        // Constants
+        const BENTUK_OPTIONS = ["Observasi", "Kinerja", "Projek", "Tes Tertulis", "Tes Lisan", "Penugasan", "Portofolio", "CATs", "Exit Ticket"];
+        const INSTRUMEN_OPTIONS = ["Rubrik", "Ceklis", "Catatan Anekdotal", "Grafik Perkembangan (Kontinum)"];
+
+        // DPL Checkbox Logic
+        function updateDPLPreview() {
+            const checkboxes = document.querySelectorAll('input[name="dpl"]:checked');
+            const outputEl = document.getElementById('out_dimensi');
+            if (checkboxes.length > 0) {
+                const list = Array.from(checkboxes).map(cb => `<li>${cb.value}</li>`).join('');
+                outputEl.innerHTML = `<ul style="list-style-type: disc; padding-left: 20px; margin: 0;">${list}</ul>`;
+            } else {
+                outputEl.innerText = '-';
+            }
+        }
+
+        document.querySelectorAll('input[name="dpl"]').forEach(cb => {
+            cb.addEventListener('change', updateDPLPreview);
+        });
+
+        // Initialization
+        const staticFields = [
+            'in_judul', 'in_sekolah', 'in_mapel', 'in_kelas', 'in_waktu', 
+            'in_tujuan', 'in_praktik', 
+            'in_lingkungan', 'in_mitra', 'in_digital', 
+            'in_as_waktu', 'in_as_kompetensi', 'in_as_bentuk', 'in_as_instrumen', 
+            'in_rtls_mb', 'in_rtls_b', 'in_rtls_bsh',
+            'in_kepsek_nama', 'in_kepsek_nip', 'in_guru_nama', 'in_guru_nip'
+        ];
+
+        staticFields.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                const outId = id.replace('in_', 'out_');
+                const outEl = document.getElementById(outId);
+                el.addEventListener('input', () => {
+                    if (id.includes('nama') || id.includes('nip')) {
+                         outEl.innerText = el.value || (id.includes('nama') ? '(....................................)' : '..........................');
+                    } else {
+                        if(outEl) outEl.innerText = el.value || '-';
+                    }
+                    if(id === 'in_as_kompetensi') renderSummativePreview();
+                });
+                if(el.value && outEl) outEl.innerText = el.value;
+            }
+        });
+
+        function initSummativeDropdowns() {
+            const sumBentuk = document.getElementById('in_as_bentuk');
+            const sumInstrumen = document.getElementById('in_as_instrumen');
+            sumBentuk.innerHTML = BENTUK_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
+            sumInstrumen.innerHTML = INSTRUMEN_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
+            sumBentuk.value = "Kinerja";
+            sumInstrumen.value = "Rubrik";
+        }
+
+        // --- MEETINGS LOGIC (NEW DYNAMIC SYSTEM) ---
+        
+        function addMeeting(data = null) {
+            const index = meetings.length;
+            const newMeeting = data || {
+                judul: '',
+                stage: 'Memahami',
+                principles: [], // array of strings e.g. ['Berkesadaran']
+                langkah: ''
+            };
+            meetings.push(newMeeting);
+            renderMeetingsInput();
+            renderMeetingsPreview();
+        }
+
+        function removeMeeting(index) {
+            if(confirm("Hapus Pertemuan ini?")) {
+                meetings.splice(index, 1);
+                renderMeetingsInput();
+                renderMeetingsPreview();
+            }
+        }
+
+        function updateMeeting(index, field, value) {
+            meetings[index][field] = value;
+            renderMeetingsPreview();
+        }
+
+        function updateMeetingPrinciple(index, value, isChecked) {
+            const meeting = meetings[index];
+            if (isChecked) {
+                if (!meeting.principles.includes(value)) meeting.principles.push(value);
+            } else {
+                meeting.principles = meeting.principles.filter(p => p !== value);
+            }
+            renderMeetingsPreview();
+        }
+
+        function renderMeetingsInput() {
+            const container = document.getElementById('meetings-input-container');
+            container.innerHTML = '';
+
+            meetings.forEach((m, i) => {
+                const div = document.createElement('div');
+                div.className = "mb-4 border-b border-green-200 pb-4 bg-white p-3 rounded shadow-sm";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-semibold text-green-700">Pertemuan ${i+1}</h4>
+                        <button type="button" onclick="removeMeeting(${i})" class="text-red-500 hover:text-red-700 text-sm font-bold">Hapus</button>
+                    </div>
+                    <label class="input-label">Judul Pertemuan</label>
+                    <input type="text" class="input-field" placeholder="Judul..." value="${m.judul}" oninput="updateMeeting(${i}, 'judul', this.value)">
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="input-label">Pengalaman Belajar</label>
+                            <select class="input-field" onchange="updateMeeting(${i}, 'stage', this.value)">
+                                <option value="Memahami" ${m.stage === 'Memahami' ? 'selected' : ''}>Memahami</option>
+                                <option value="Mengaplikasi" ${m.stage === 'Mengaplikasi' ? 'selected' : ''}>Mengaplikasi</option>
+                                <option value="Merefleksi" ${m.stage === 'Merefleksi' ? 'selected' : ''}>Merefleksi</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label">Prinsip Pembelajaran</label>
+                            <div class="bg-gray-50 border border-gray-300 p-2 rounded flex flex-col gap-1">
+                                <label class="inline-flex items-center text-sm">
+                                    <input type="checkbox" class="mr-2" onchange="updateMeetingPrinciple(${i}, 'Berkesadaran', this.checked)" ${m.principles.includes('Berkesadaran') ? 'checked' : ''}> Berkesadaran
+                                </label>
+                                <label class="inline-flex items-center text-sm">
+                                    <input type="checkbox" class="mr-2" onchange="updateMeetingPrinciple(${i}, 'Bermakna', this.checked)" ${m.principles.includes('Bermakna') ? 'checked' : ''}> Bermakna
+                                </label>
+                                <label class="inline-flex items-center text-sm">
+                                    <input type="checkbox" class="mr-2" onchange="updateMeetingPrinciple(${i}, 'Menggembirakan', this.checked)" ${m.principles.includes('Menggembirakan') ? 'checked' : ''}> Menggembirakan
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="input-label mt-2">Langkah Kegiatan</label>
+                    <textarea class="input-field h-32" placeholder="Tuliskan langkah-langkah..." oninput="updateMeeting(${i}, 'langkah', this.value)">${m.langkah}</textarea>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderMeetingsPreview() {
+            const container = document.getElementById('out_meetings_container');
+            container.innerHTML = '';
+
+            meetings.forEach((m, i) => {
+                const principlesText = m.principles.length > 0 ? m.principles.join(", ") : "-";
+                const div = document.createElement('div');
+                div.className = "meeting-box";
+                div.innerHTML = `
+                    <strong>Pertemuan ${i+1} : <span>${m.judul || '-'}</span></strong><br>
+                    Pengalaman Belajar : <span>${m.stage}</span><br>
+                    Prinsip Pembelajaran : <span>${principlesText}</span><br>
+                    <div class="doc-content" style="margin-top: 5px; white-space: pre-line;">${m.langkah || '-'}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- FORMATIVE LOGIC ---
+        function addAssessment(data = null) {
+            const id = Date.now();
+            const newAssessment = data || {
+                id: id, title: `Asesmen ${formativeAssessments.length + 1}`, konteks: '', tujuan: '',
+                bentuk: 'Observasi', instrumen: 'Rubrik', kompetensi: '',
+                rubrik_mb: '', rubrik_b: '', rubrik_bsh: '', rtl_mb: '', rtl_b: '', rtl_bsh: ''
+            };
+            if(!data) formativeAssessments.push(newAssessment);
+            renderFormativeInputs();
+            renderFormativePreview();
+        }
+
+        function removeAssessment(index) {
+            formativeAssessments.splice(index, 1);
+            renderFormativeInputs();
+            renderFormativePreview();
+        }
+
+        function updateAssessment(index, field, value) {
+            formativeAssessments[index][field] = value;
+            renderFormativePreview();
+            if(field === 'instrumen') renderFormativeInputs();
+        }
+
+        function renderFormativeInputs() {
+            const container = document.getElementById('formative-container');
+            container.innerHTML = '';
+            formativeAssessments.forEach((assessment, index) => {
+                const card = document.createElement('div');
+                card.className = 'assessment-card shadow-sm';
+                const createOptions = (opts, selected) => opts.map(o => `<option value="${o}" ${o === selected ? 'selected' : ''}>${o}</option>`).join('');
+                let dynamicFields = '';
+                const inst = assessment.instrumen;
+                if (inst === 'Rubrik' || inst === 'Grafik Perkembangan (Kontinum)') {
+                    dynamicFields = `
+                        <label class="input-label">Kriteria Penilaian (${inst === 'Grafik' ? 'Tahapan' : 'Rubrik'})</label>
+                        <div class="grid grid-cols-3 gap-2 mb-2">
+                            <input type="text" class="input-field" placeholder="MB/Tahap 1" value="${assessment.rubrik_mb}" oninput="updateAssessment(${index}, 'rubrik_mb', this.value)">
+                            <input type="text" class="input-field" placeholder="B/Tahap 2" value="${assessment.rubrik_b}" oninput="updateAssessment(${index}, 'rubrik_b', this.value)">
+                            <input type="text" class="input-field" placeholder="BSH/Tahap 3" value="${assessment.rubrik_bsh}" oninput="updateAssessment(${index}, 'rubrik_bsh', this.value)">
+                        </div>`;
+                }
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-2"><h4 class="text-blue-700 font-bold">Asesmen #${index + 1}</h4><button type="button" class="btn-delete" onclick="removeAssessment(${index})">Hapus</button></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="input-label">Bentuk</label><select class="input-field" onchange="updateAssessment(${index}, 'bentuk', this.value)">${createOptions(BENTUK_OPTIONS, assessment.bentuk)}</select></div>
+                        <div><label class="input-label">Instrumen</label><select class="input-field" onchange="updateAssessment(${index}, 'instrumen', this.value)">${createOptions(INSTRUMEN_OPTIONS, assessment.instrumen)}</select></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="input-label">Konteks</label><input type="text" class="input-field" value="${assessment.konteks}" oninput="updateAssessment(${index}, 'konteks', this.value)"></div>
+                        <div><label class="input-label">Tujuan</label><input type="text" class="input-field" value="${assessment.tujuan}" oninput="updateAssessment(${index}, 'tujuan', this.value)"></div>
+                    </div>
+                    <label class="input-label">${inst === 'Ceklis' ? 'Daftar Indikator (Baris baru per item)' : inst === 'Catatan Anekdotal' ? 'Fokus Observasi' : 'Kompetensi / Indikator'}</label>
+                    <textarea class="input-field h-24" oninput="updateAssessment(${index}, 'kompetensi', this.value)">${assessment.kompetensi}</textarea>
+                    ${dynamicFields}
+                    <label class="input-label">Rencana Tindak Lanjut</label>
+                    <div class="grid grid-cols-1 gap-2">
+                        <input type="text" class="input-field" placeholder="Butuh Bimbingan..." value="${assessment.rtl_mb}" oninput="updateAssessment(${index}, 'rtl_mb', this.value)">
+                        <input type="text" class="input-field" placeholder="Sudah Baik..." value="${assessment.rtl_b}" oninput="updateAssessment(${index}, 'rtl_b', this.value)">
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function renderFormativePreview() {
+            const container = document.getElementById('out_formative_container');
+            container.innerHTML = '';
+            formativeAssessments.forEach((assessment, index) => {
+                const block = document.createElement('div');
+                block.style.marginBottom = '25px';
+                block.style.pageBreakInside = 'avoid';
+                let html = `<div style="border-bottom: 1px dashed #ccc; padding-bottom: 5px; margin-bottom: 10px;"><strong>${index + 1}. ${assessment.bentuk} (${assessment.instrumen})</strong><ul style="list-style: none; padding-left: 0; margin-top: 2px; font-size: 0.95em;"><li><em>Konteks: ${assessment.konteks || '-'}</em> | <em>Tujuan: ${assessment.tujuan || '-'}</em></li></ul></div>`;
+                html += generateAssessmentTableHTML(assessment.instrumen, assessment.kompetensi, assessment.rubrik_mb, assessment.rubrik_b, assessment.rubrik_bsh);
+                html += `<strong>Rencana Tindak Lanjut:</strong><ul style="list-style: none; padding-left: 0; margin-top: 5px; font-size: 0.95em;"><li>- Intervensi/Bimbingan: ${assessment.rtl_mb || '-'}</li><li>- Pengayaan/Apresiasi: ${assessment.rtl_b || '-'}</li></ul>`;
+                block.innerHTML = html;
+                container.appendChild(block);
+            });
+        }
+
+        // --- SUMMATIVE LOGIC ---
+        function updateSummativeData(field, value) { summativeDynamicData[field] = value; renderSummativePreview(); }
+        
+        function renderSummativeUI() {
+            const inst = document.getElementById('in_as_instrumen').value;
+            const container = document.getElementById('summative-dynamic-fields');
+            const lblKompetensi = document.getElementById('lbl_as_kompetensi');
+            if(inst === 'Ceklis') lblKompetensi.innerText = "Daftar Indikator (Baris baru per item)";
+            else if(inst === 'Catatan Anekdotal') lblKompetensi.innerText = "Fokus Observasi / Perilaku";
+            else lblKompetensi.innerText = "Kompetensi / Indikator";
+            let html = '';
+            if (inst === 'Rubrik' || inst === 'Grafik Perkembangan (Kontinum)') {
+                html = `<label class="input-label">Kriteria Penilaian (${inst === 'Grafik' ? 'Tahapan' : 'Rubrik'})</label><div class="grid grid-cols-3 gap-2 mb-2"><input type="text" class="input-field" placeholder="MB/Tahap 1" value="${summativeDynamicData.rubrik_mb}" oninput="updateSummativeData('rubrik_mb', this.value)"><input type="text" class="input-field" placeholder="B/Tahap 2" value="${summativeDynamicData.rubrik_b}" oninput="updateSummativeData('rubrik_b', this.value)"><input type="text" class="input-field" placeholder="BSH/Tahap 3" value="${summativeDynamicData.rubrik_bsh}" oninput="updateSummativeData('rubrik_bsh', this.value)"></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function renderSummativePreview() {
+            const bentuk = document.getElementById('in_as_bentuk').value;
+            const inst = document.getElementById('in_as_instrumen').value;
+            const komp = document.getElementById('in_as_kompetensi').value;
+            const container = document.getElementById('out_summative_content');
+            document.getElementById('out_as_bentuk').innerText = bentuk;
+            document.getElementById('out_as_instrumen').innerText = inst;
+            container.innerHTML = generateAssessmentTableHTML(inst, komp, summativeDynamicData.rubrik_mb, summativeDynamicData.rubrik_b, summativeDynamicData.rubrik_bsh);
+        }
+
+        // --- HELPER HTML GENERATOR ---
+        function generateAssessmentTableHTML(instrumen, kompetensiText, r_mb, r_b, r_bsh) {
+            const items = (kompetensiText || '').split('\n').filter(i => i.trim() !== '');
+            let html = '';
+            if (instrumen === 'Rubrik') {
+                html += `<div style="margin-bottom: 5px;"><strong>Kompetensi yang Dinilai:</strong></div><ul style="padding-left: 20px; margin-top:0;">${items.length > 0 ? items.map(i => `<li>${i}</li>`).join('') : '-'}</ul><table class="rubric-table"><thead><tr class="bg-gray-100"><th width="33%">Mulai Berkembang</th><th width="33%">Berkembang</th><th width="33%">Berkembang Sesuai Harapan</th></tr></thead><tbody><tr><td>${r_mb || '-'}</td><td>${r_b || '-'}</td><td>${r_bsh || '-'}</td></tr></tbody></table>`;
+            } else if (instrumen === 'Ceklis') {
+                html += `<table class="rubric-table"><thead><tr class="bg-gray-100"><th width="5%">No</th><th width="65%">Indikator / Elemen yang Dituju</th><th width="15%">Ya</th><th width="15%">Tidak</th></tr></thead><tbody>${items.length > 0 ? items.map((item, i) => `<tr><td align="center">${i+1}</td><td>${item}</td><td></td><td></td></tr>`).join('') : '<tr><td colspan="4" align="center">Belum ada indikator</td></tr>'}</tbody></table>`;
+            } else if (instrumen === 'Catatan Anekdotal') {
+                html += `<div style="margin-bottom: 5px;"><strong>Fokus Observasi:</strong> ${kompetensiText || '-'}</div><table class="rubric-table"><thead><tr class="bg-gray-100"><th width="20%">Nama Murid</th><th width="15%">Waktu/Tgl</th><th width="30%">Peristiwa / Perilaku</th><th width="35%">Analisis & Tindak Lanjut</th></tr></thead><tbody><tr><td height="50"></td><td></td><td></td><td></td></tr><tr><td height="50"></td><td></td><td></td><td></td></tr><tr><td height="50"></td><td></td><td></td><td></td></tr></tbody></table>`;
+            } else if (instrumen === 'Grafik Perkembangan (Kontinum)') {
+                html += `<div style="margin-bottom: 10px;"><strong>Indikator:</strong> ${kompetensiText || '-'}</div><div style="display: flex; gap: 10px; text-align: center; margin-bottom: 10px;"><div style="border: 1px solid black; flex: 1; padding: 10px; border-radius: 5px;"><strong>Tahap 1</strong><br><span style="font-size: 0.9em">${r_mb || '...'}</span></div><div style="display:flex; align-items:center;">&#8594;</div><div style="border: 1px solid black; flex: 1; padding: 10px; border-radius: 5px; background-color: #f3f4f6;"><strong>Tahap 2</strong><br><span style="font-size: 0.9em">${r_b || '...'}</span></div><div style="display:flex; align-items:center;">&#8594;</div><div style="border: 1px solid black; flex: 1; padding: 10px; border-radius: 5px;"><strong>Tahap 3</strong><br><span style="font-size: 0.9em">${r_bsh || '...'}</span></div></div>`;
+            }
+            return html;
+        }
+
+        // --- DOWNLOAD FUNCTIONALITY ---
+        function downloadDoc() {
+            // Get content
+            const content = document.getElementById('document-preview').innerHTML;
+            
+            // Basic HTML wrapper for Word to interpret styles correctly
+            // Note: Mso-specific styles help Word handle breaks and layout
+            const preHtml = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Export HTML to Word Document with JavaScript</title>
+                    <style>
+                        body { font-family: 'Times New Roman', serif; font-size: 12pt; }
+                        table { border-collapse: collapse; width: 100%; }
+                        td, th { border: 1px solid black; padding: 5px; }
+                        .doc-title { text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 20px; text-transform: uppercase; }
+                        .meeting-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; }
+                        /* Page Break Logic for Word */
+                        br[style*="mso-break-type: section-break"] { page-break-before: always; }
+                    </style>
+                </head><body>`;
+            const postHtml = "</body></html>";
+            
+            const html = preHtml + content + postHtml;
+
+            // Create Blob with specific MIME type for Word
+            const blob = new Blob(['\ufeff', html], {
+                type: 'application/msword'
+            });
+            
+            // Download Link
+            const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+            const downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            
+            if(navigator.msSaveOrOpenBlob ){
+                navigator.msSaveOrOpenBlob(blob, 'Perencanaan_Pembelajaran.doc');
+            } else {
+                downloadLink.href = url;
+                downloadLink.download = 'Perencanaan_Pembelajaran.doc'; // .doc is more compatible for HTML content than .docx
+                downloadLink.click();
+            }
+            document.body.removeChild(downloadLink);
+        }
+
+        function fillExample() {
+            const staticData = {
+                'in_judul': 'CERDIK MENGELOLA SAMPAH PLASTIK', 'in_sekolah': 'SD Negeri Merdeka 01', 'in_mapel': 'IPAS', 'in_kelas': 'Fase C / Kelas 5', 'in_waktu': '6 JP (3 Pertemuan)', 'in_tujuan': 'Peserta didik mampu menganalisis permasalahan sampah dan menciptakan produk daur ulang.', 
+                'in_praktik': 'Model Pembelajaran: Project Based Learning (PjBL)\nStrategi: Diferensiasi Produk berdasarkan minat siswa.', 
+                'in_lingkungan': 'Kelas U-Shape, Pojok Eksplorasi Sampah.', 'in_mitra': 'Bank Sampah "Berkah Bumi"', 'in_digital': 'YouTube (Video), Canva (Poster)', 
+                'in_as_waktu': 'Akhir Pertemuan 3', 'in_as_kompetensi': 'Kualitas dan kebermanfaatan produk daur ulang', 'in_rtls_mb': 'Perbaikan produk.', 'in_rtls_b': 'Pajang di kelas.', 'in_rtls_bsh': 'Ikut pameran sekolah.',
+                'in_kepsek_nama': 'Dra. Hj. Siti Aminah, M.Pd.', 'in_kepsek_nip': '19700101 199503 2 001', 'in_guru_nama': 'Budi Santoso, S.Pd.', 'in_guru_nip': '19850505 201001 1 005'
+            };
+            for (const [key, value] of Object.entries(staticData)) {
+                const el = document.getElementById(key);
+                if(el) { el.value = value; el.dispatchEvent(new Event('input')); }
+            }
+            
+            // Handle DPL Checkboxes
+            document.querySelectorAll('input[name="dpl"]').forEach(cb => cb.checked = false); // Clear first
+            ['Keimanan & Ketakwaan', 'Kreativitas'].forEach(val => {
+                const cb = document.querySelector(`input[name="dpl"][value="${val}"]`);
+                if(cb) cb.checked = true;
+            });
+            updateDPLPreview();
+
+            // Populate Meetings (Dynamic)
+            meetings = []; // Clear existing
+            addMeeting({ 
+                judul: 'Detektif Sampah', stage: 'Memahami', 
+                principles: ['Berkesadaran', 'Menggembirakan'], 
+                langkah: '1. Pertanyaan pemantik tentang bungkus jajan.\n2. Observasi lapangan (Audit Sampah).\n3. Mencatat temuan.' 
+            });
+            addMeeting({ 
+                judul: 'Bengkel Kreatif', stage: 'Mengaplikasi', 
+                principles: ['Berkesadaran', 'Bermakna'], 
+                langkah: '1. Merancang sketsa produk.\n2. Membuat purwarupa daur ulang.' 
+            });
+            addMeeting({ 
+                judul: 'Gelar Karya', stage: 'Merefleksi', 
+                principles: ['Berkesadaran', 'Bermakna', 'Menggembirakan'], 
+                langkah: '1. Presentasi (Mini Exhibition).\n2. Refleksi "Dua Bintang Satu Harapan".' 
+            });
+
+            document.getElementById('in_as_bentuk').value = "Projek"; document.getElementById('in_as_instrumen').value = "Rubrik";
+            summativeDynamicData = { rubrik_mb: 'Produk kurang kokoh.', rubrik_b: 'Produk fungsional.', rubrik_bsh: 'Produk inovatif dan estetis.' };
+            renderSummativeUI(); renderSummativePreview();
+            
+            // Populate Formative Assessments
+            formativeAssessments = []; 
+            addAssessment({ id: 1, title: 'Asesmen 1', bentuk: 'Observasi', instrumen: 'Ceklis', konteks: 'Saat Audit Sampah', tujuan: 'Kemampuan identifikasi', kompetensi: 'Memisahkan Organik\nMemisahkan Anorganik\nMencatat jumlah sampah', rtl_mb: 'Diberi contoh benda langsung', rtl_b: 'Menjadi tutor teman' });
+            addAssessment({ id: 2, title: 'Asesmen 2', bentuk: 'Kinerja', instrumen: 'Rubrik', konteks: 'Diskusi Kelompok', tujuan: 'Kerjasama tim', kompetensi: 'Partisipasi aktif dalam diskusi', rubrik_mb: 'Pasif, hanya diam', rubrik_b: 'Aktif berpendapat', rubrik_bsh: 'Aktif dan mengajak teman lain', rtl_mb: 'Guru memancing pertanyaan', rtl_b: 'Diberi peran moderator' });
+            
+            alert("Data contoh berhasil dimuat!");
+        }
+
+        // Start with 1 empty meeting
+        addMeeting();
+        initSummativeDropdowns(); renderSummativeUI(); renderFormativeInputs();
+    </script>
+</body>
+</html>
