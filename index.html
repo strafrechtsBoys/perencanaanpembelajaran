@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perencana Pembelajaran</title>
+    <title>Perencana Pembelajaran Deep Learning SD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* CSS untuk Print & Export */
@@ -798,7 +798,7 @@
             } else if (instrumen === 'Ceklis') {
                 html += `<table class="rubric-table"><thead><tr class="bg-gray-100"><th width="5%">No</th><th width="65%">Indikator / Elemen yang Dituju</th><th width="15%">Ya</th><th width="15%">Tidak</th></tr></thead><tbody>${items.length > 0 ? items.map((item, i) => `<tr><td align="center">${i+1}</td><td>${item}</td><td></td><td></td></tr>`).join('') : '<tr><td colspan="4" align="center">Belum ada indikator</td></tr>'}</tbody></table>`;
             } else if (instrumen === 'Catatan Anekdotal') {
-                html += `<div style="margin-bottom: 5px;"><strong>Fokus Observasi:</strong> ${kompetensiText || '-'}</div><table class="rubric-table"><thead><tr class="bg-gray-100"><th width="20%">Nama Murid</th><th width="15%">Waktu/Tgl</th><th width="30%">Peristiwa / Perilaku</th><th width="35%">Analisis & Tindak Lanjut</th></tr></thead><tbody><tr><td height="50"></td><td></td><td></td><td></td></tr><tr><td height="50"></td><td></td><td></td><td></td></tr></tbody></table>`;
+                html += `<div style="margin-bottom: 5px;"><strong>Fokus Observasi:</strong> ${kompetensiText || '-'}</div><table class="rubric-table"><thead><tr class="bg-gray-100"><th width="20%">Nama Murid</th><th width="15%">Waktu/Tgl</th><th width="30%">Peristiwa / Perilaku</th><th width="35%">Analisis & Tindak Lanjut</th></tr></thead><tbody><tr><td height="50"></td><td></td><td></td><td></td></tr><tr><td height="50"></td><td></td><td></td><td></td></tr><tr><td height="50"></td><td></td><td></td><td></td></tr></tbody></table>`;
             } else if (instrumen === 'Grafik Perkembangan (Kontinum)') {
                 html += `<div style="margin-bottom: 10px;"><strong>Indikator:</strong> ${kompetensiText || '-'}</div><div style="display: flex; gap: 10px; text-align: center; margin-bottom: 10px;">`;
                 if (rubricData && rubricData.length > 0) {
@@ -880,5 +880,3 @@
     </script>
 </body>
 </html>
-
-
